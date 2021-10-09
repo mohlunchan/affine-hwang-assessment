@@ -1,7 +1,7 @@
 import AxiosInstance from './instance'
 
-export const getCustomers = () => {
-    return AxiosInstance.get('/')
+export const getCustomers = (page = 1, size = 10) => {
+    return AxiosInstance.get(`/?page=${page}&size=${size}`)
 }
 
 export const getCustomer = (uuid) => {
