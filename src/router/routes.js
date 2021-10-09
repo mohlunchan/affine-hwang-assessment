@@ -1,6 +1,7 @@
 const routes = [
     {
         path: '/',
+        name: 'customer-list',
         component: () => import('@/views/customer/list.vue')
     },
     {
