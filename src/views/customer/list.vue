@@ -1,40 +1,46 @@
 <template>
-  <button @click="$router.push('/add')">Add New Customer</button>
   <!-- vue 3 now support fragmenting so we do not need a default root node -->
-  <template v-for="customer in list" :key="`customer-${customer.id}`">
-    <CustomerListComponent
-      v-bind="customer"
-      :ref="`customer-${customer.id}`"
-      @edit="handleEdit(customer.id)"
-      @delete="handleDelete(customer.id)"
-    >
-      <template #test>{{ isDeleting }}</template>
-    </CustomerListComponent>
-  </template>
+  <button @click="$router.push('/add')">Add New Customer</button>
+  <n-data-table
+    :columns="columns"
+    :data="list"
+    :pagination="pagination"
+    :row-props="rowProps"
+  />
 </template>
 
 <script>
-import CustomerListComponent from "@/components/customer-list.vue";
 import { getCustomers, deleteCustomer } from "@/api/module/customers";
+import { NDataTable } from "naive-ui";
+import { debounce } from "@/libs/debounce";
 
 export default {
   components: {
-    CustomerListComponent,
+    NDataTable,
   },
   data() {
     return {
       list: [],
+      pagination: {
+        pageSize: 10,
+      },
+      columns: [
+        {
+          title: "Name",
+          key: "name",
+        },
+        {
+          title: "Email",
+          key: "email",
+        },
+        {
+          title: "Address",
+          key: "address",
+        },
+      ],
     };
   },
   methods: {
-    handleEdit(customerId) {
-      this.$router.push({
-        name: "customer-details",
-        params: {
-          id: customerId,
-        },
-      });
-    },
     async handleDelete(customerId) {
       try {
         await deleteCustomer(customerId);
@@ -46,6 +52,19 @@ export default {
       } catch {
         this.$refs[`customer-${customerId}`].isDeleting = false;
       }
+    },
+    rowProps(row) {
+      return {
+        style: "cursor: pointer",
+        onClick: debounce(() => {
+          this.$router.push({
+            name: "customer-details",
+            params: {
+              id: row.id,
+            },
+          });
+        }, 300),
+      };
     },
   },
   beforeRouteEnter(to, from, next) {
