@@ -4,22 +4,15 @@ const routes = [
         component: () => import('@/views/customer/list.vue')
     },
     {
-        path: '/:id(\\d+)',
-        name: 'user-details',
-        props: true,
+        path: '/:id',
+        name: 'customer-details',
         component: () => import('@/views/customer/details.vue')
     },
     {
         path: '/add',
-        name: 'user-add',
-        props: true,
+        name: 'customer-add',
         component: () => import('@/views/customer/details.vue')
     },
-    // {
-    //     path: '/add',
-    //     name: 'user-details',
-    //     component: () => import('@/views/customer/details.vue')
-    // }
 ]
 
 export default routes

@@ -15,6 +15,7 @@
 
 <script>
 import CustomerListComponent from "@/components/customer-list.vue";
+import { getCustomers, deleteCustomer } from "@/api/module/customers";
 
 export default {
   components: {
@@ -22,45 +23,42 @@ export default {
   },
   data() {
     return {
-      list: [
-        {
-          id: 10000,
-          name: "Name A",
-          email: "Email A",
-          address: "Address A",
-        },
-        {
-          id: 10001,
-          name: "Name B",
-          email: "Email B",
-          address: "Address B",
-        },
-      ],
+      list: [],
     };
   },
   methods: {
     handleEdit(customerId) {
       this.$router.push({
-        name: "user-details",
+        name: "customer-details",
         params: {
-          ...this.list.find((customer) => customer.id === customerId),
           id: customerId,
-          fromProps: true,
         },
       });
     },
-    handleDelete(customerId) {
-      setTimeout(() => {
-        try {
-          this.list.splice(
-            this.list.findIndex((customer) => customer.id === customerId),
-            1
-          );
-        } catch {
-          this.$refs[`customer-${customerId}`].isDeleting = false;
-        }
-      }, 1500);
+    async handleDelete(customerId) {
+      try {
+        await deleteCustomer(customerId);
+
+        this.list.splice(
+          this.list.findIndex((customer) => customer.id === customerId),
+          1
+        );
+      } catch {
+        this.$refs[`customer-${customerId}`].isDeleting = false;
+      }
     },
+  },
+  beforeRouteEnter(to, from, next) {
+    getCustomers().then((response) => {
+      next((vm) => {
+        vm.list = response.data.map((item) => ({
+          id: item.uuid,
+          name: item.name,
+          address: item.address,
+          email: item.email,
+        }));
+      });
+    });
   },
 };
 </script>

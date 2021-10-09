@@ -20,13 +20,18 @@
     </template>
 
     <button type="submit">
-      {{ action === "add" ? "Add" : "Update" }} Customer
+      {{ $route.name === "customer-add" ? "Add" : "Update" }} Customer
     </button>
   </Form>
 </template>
 
 <script>
 import { Field, Form, ErrorMessage } from "vee-validate";
+import {
+  getCustomer,
+  createCustomer,
+  updateCustomer,
+} from "@/api/module/customers";
 
 export default {
   components: {
@@ -67,14 +72,17 @@ export default {
       ],
     };
   },
-  computed: {
-    action() {
-      if (this.$route.name === "user-add") return "add";
-      return "edit";
-    },
-  },
   methods: {
-    handleSubmit() {},
+    handleSubmit() {
+      if (this.$route.name === "customer-add") {
+        createCustomer({ ...this.formValues });
+      } else {
+        const data = { ...this.formValues };
+        delete data.email;
+
+        updateCustomer({ ...data, uuid: this.$route.params.id });
+      }
+    },
     setDefaultFormValues({ name, email, address }) {
       this.formValues.name = name;
       this.formValues.email = email;
@@ -82,11 +90,13 @@ export default {
     },
   },
   beforeRouteEnter(to, from, next) {
-    next((vm) => {
-      const { fromProps } = vm.$route.params;
-
-      if (fromProps === "true") vm.setDefaultFormValues(vm.$route.params);
-    });
+    if (to.name === "customer-add") {
+      next();
+    } else {
+      getCustomer(to.params.id).then((response) => {
+        next((vm) => vm.setDefaultFormValues({ ...response.data }));
+      });
+    }
   },
 };
 </script>
