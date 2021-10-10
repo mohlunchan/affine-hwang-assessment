@@ -6,17 +6,19 @@
   >
 
   <n-data-table
+    remote
     v-model:page="page"
     :columns="columns"
     :data="items"
+    :loading="isLoading"
     :pagination="pagination"
     :row-props="rowProps"
-    :loading="isLoading"
+    @update:page="handlePageChange"
   />
 </template>
 
 <script>
-import { getCustomers, deleteCustomer } from "@/api/module/customers";
+import { getCustomers } from "@/api/module/customers";
 import { NDataTable, useLoadingBar, NButton } from "naive-ui";
 
 export default {
@@ -27,11 +29,10 @@ export default {
   data() {
     return {
       items: [],
-      totalItems: 0,
       pagination: {
         pageSize: 10,
-        pageCount: 10,
-        itemCount: 10,
+        pageCount: 1,
+        itemCount: 0,
       },
       columns: [
         {
@@ -54,7 +55,7 @@ export default {
   computed: {
     page: {
       get() {
-        return this.$route.query.page || 1;
+        return Number(this.$route.query.page || 1);
       },
       set(value) {
         this.$router.push({
@@ -68,23 +69,8 @@ export default {
         this.pagination.page = value;
       },
     },
-    pageCount() {
-      return Math.ceil(this.totalItems / this.pagination.pageSize);
-    },
   },
   methods: {
-    async handleDelete(customerId) {
-      try {
-        await deleteCustomer(customerId);
-
-        this.items.splice(
-          this.items.findIndex((customer) => customer.id === customerId),
-          1
-        );
-      } catch {
-        this.$refs[`customer-${customerId}`].isDeleting = false;
-      }
-    },
     rowProps(row) {
       return {
         style: "cursor: pointer",
@@ -109,23 +95,41 @@ export default {
         },
       };
     },
+    async handlePageChange(currentPage) {
+      try {
+        if (this.isLoading) return;
+
+        this.isLoading = true;
+        this.loadingBar.start();
+        const { data } = await getCustomers(currentPage, 10);
+        this.setCustomers({ ...data, page: currentPage });
+        this.loadingBar.finish();
+      } catch {
+        this.loadingBar.error();
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    setCustomers({ total, data, page }) {
+      this.pagination.page = page;
+      this.pagination.itemCount = total;
+      this.pagination.pageCount = Math.ceil(total / this.pagination.pageSize);
+
+      this.items = data.map((item) => ({
+        id: item.uuid,
+        name: item.name,
+        address: item.address,
+        email: item.email,
+      }));
+    },
   },
   beforeRouteEnter(to, from, next) {
-    getCustomers(to.query.page || 1, 10)
-      .then((response) => {
+    const page = Number(to.query.page || 1);
+
+    getCustomers(page, 10)
+      .then(({ data }) => {
         next((vm) => {
-          const { total, data } = response.data;
-
-          vm.totalItems = total;
-          vm.pagination.itemCount = data.length;
-          vm.pagination.pageCount = vm.pageCount;
-
-          vm.items = data.map((item) => ({
-            id: item.uuid,
-            name: item.name,
-            address: item.address,
-            email: item.email,
-          }));
+          vm.setCustomers({ ...data, page });
         });
       })
       .catch(() => {
