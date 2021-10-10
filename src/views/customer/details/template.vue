@@ -1,19 +1,11 @@
 <template>
-  <n-form
-    ref="form"
-    :model="{ ...defaultValues, ...model }"
-    :rules="rules"
-    @submit="handleSubmit"
-  >
+  <n-form ref="form" :model="model" :rules="rules" @submit="handleSubmit">
     <template v-for="(field, index) in fields" :key="`form-field-${index}`">
       <div>
         <n-form-item :label="field.label" :path="field.name">
           <component
             v-model:value="model[field.name]"
-            v-bind="{
-              ...field.attrs,
-              value: model[field.name] || defaultValues[field.name] || '',
-            }"
+            v-bind="field.attrs"
             :is="field.component"
           ></component>
         </n-form-item>
@@ -57,6 +49,17 @@ export default {
       },
     },
   },
+  watch: {
+    defaultValues: {
+      immediate: true,
+      deep: true,
+      handler(value) {
+        for (let key in value) {
+          this.model[key] = value[key];
+        }
+      },
+    },
+  },
   data() {
     return {
       model: {},
@@ -87,10 +90,7 @@ export default {
 
       this.loading = true;
 
-      this.$emit("submit", {
-        ...this.defaultValues,
-        ...this.model,
-      });
+      this.$emit("submit", this.model);
     },
     getComponent(type) {
       switch (type) {
