@@ -7,6 +7,15 @@
     :disableForm="loading"
     @submit="handleUpdate"
   >
+    <template #header>
+      <n-button
+        type="info"
+        style="margin-bottom: 15px"
+        @click="generateFakeData"
+        >Generate Fake Data</n-button
+      >
+    </template>
+
     <template #action="{ validate }">
       <template v-if="!loading">
         <n-button style="margin-right: 8px" @click="validate"
@@ -113,6 +122,19 @@ export default {
       for (let i = 0; i < this.formFields.length; i++) {
         const { name } = this.formFields[i];
         this.defaultValues[name] = data[name];
+      }
+    },
+    generateFakeData() {
+      const { model } = this.$refs.form;
+
+      //only genereate fake datas for fields that are not email
+      const filteredFields = this.formFields.filter(
+        (item) => item.name !== "email"
+      );
+
+      for (let i = 0; i < filteredFields.length; i++) {
+        const { name, fake } = filteredFields[i];
+        model[name] = fake();
       }
     },
   },

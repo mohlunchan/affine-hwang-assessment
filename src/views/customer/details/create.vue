@@ -6,6 +6,10 @@
     :disableForm="loading"
     @submit="handleSubmit"
   >
+    <template #header>
+      <n-button type="info" style="margin-bottom: 15px" @click="generateFakeData">Generate Fake Data</n-button>
+    </template>
+
     <template #action="{ validate }">
       <n-button :loading="loading" @click="validate">
         Create Customer
@@ -49,9 +53,19 @@ export default {
 
         //notify user which parameters are invalid
         if (errors && errors.length > 0)
-          this.message.error(errors.map((error) => `${error.param}: ${error.msg}`)[0]);
+          this.message.error(
+            errors.map((error) => `${error.param}: ${error.msg}`)[0]
+          );
       } finally {
         this.loading = false;
+      }
+    },
+    generateFakeData() {
+      const { model } = this.$refs.form;
+
+      for (let i = 0; i < this.formFields.length; i++) {
+        const { name, fake } = this.formFields[i];
+        model[name] = fake();
       }
     },
   },

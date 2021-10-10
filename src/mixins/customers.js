@@ -1,3 +1,5 @@
+import faker from 'faker'
+
 export default {
     data() {
         return {
@@ -12,6 +14,9 @@ export default {
                     attrs: {
                         placeholder: "Insert name",
                     },
+                    fake: () => {
+                        return faker.name.findName()
+                    }
                 },
                 {
                     name: "email",
@@ -24,6 +29,9 @@ export default {
                     attrs: {
                         placeholder: "Insert email",
                     },
+                    fake: () => {
+                        return faker.internet.email()
+                    }
                 },
                 {
                     name: "address",
@@ -35,6 +43,9 @@ export default {
                     attrs: {
                         placeholder: "Insert placeholder",
                     },
+                    fake: () => {
+                        return faker.address.streetAddress()
+                    }
                 },
             ],
         }
