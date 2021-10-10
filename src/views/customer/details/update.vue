@@ -1,7 +1,7 @@
 <template>
   <Template
     ref="form"
-    :formFields="formFields"
+    :formFields="computedFormFields"
     :rules="rules"
     :defaultValues="defaultValues"
     @submit="handleSubmit"
@@ -30,6 +30,21 @@ export default {
       loadingBar: useLoadingBar(),
       message: useMessage(),
     };
+  },
+  computed: {
+    computedFormFields() {
+      //we can set certain fields with extra attributes
+
+      return this.formFields.map((field) => {
+        const item = { ...field };
+
+        if (item.name === "email") item.attrs.readonly = true;
+
+        return {
+          ...item,
+        };
+      });
+    },
   },
   methods: {
     async handleSubmit(formValues) {
