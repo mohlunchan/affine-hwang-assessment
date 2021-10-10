@@ -1,5 +1,7 @@
 <template>
-  <n-button @click="$router.push({ name: 'customer-create' })"
+  <n-button
+    @click="$router.push({ name: 'customer-create' })"
+    style="margin-bottom: 15px"
     >Add New Customer</n-button
   >
 
