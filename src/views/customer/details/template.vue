@@ -1,5 +1,11 @@
 <template>
-  <n-form ref="form" :model="model" :rules="rules" @submit="handleSubmit">
+  <n-form
+    ref="form"
+    :model="model"
+    :rules="rules"
+    :disabled="disableForm"
+    @submit="handleSubmit"
+  >
     <template v-for="(field, index) in fields" :key="`form-field-${index}`">
       <div>
         <n-form-item :label="field.label" :path="field.name">
@@ -12,14 +18,14 @@
       </div>
     </template>
 
-    <n-button :loading="loading" @click="handleClick">
-      <slot v-if="!loading" v-bind="{ loading }" name="submit"></slot>
-    </n-button>
+    <slot v-bind="{ validate }" name="action">
+      <!-- we can put some actions in here e.g. update/ delete buttons -->
+    </slot>
   </n-form>
 </template>
 
 <script>
-import { NForm, NInput, NFormItem, NButton } from "naive-ui";
+import { NForm, NInput, NFormItem } from "naive-ui";
 
 export default {
   emits: ["submit"],
@@ -27,7 +33,6 @@ export default {
     NForm,
     NFormItem,
     NInput,
-    NButton,
   },
   props: {
     formFields: {
@@ -48,6 +53,10 @@ export default {
         return {};
       },
     },
+    disableForm: {
+      type: Boolean,
+      default: false,
+    },
   },
   watch: {
     defaultValues: {
@@ -63,7 +72,6 @@ export default {
   data() {
     return {
       model: {},
-      loading: false,
     };
   },
   computed: {
@@ -78,19 +86,10 @@ export default {
     },
   },
   methods: {
-    handleClick(e) {
-      e.preventDefault();
-
+    validate() {
       this.$refs.form.validate((errors) => {
-        if (!errors) this.handleSubmit();
+        if (!errors) this.$emit("submit", this.model);
       });
-    },
-    handleSubmit() {
-      if (this.loading) return;
-
-      this.loading = true;
-
-      this.$emit("submit", this.model);
     },
     getComponent(type) {
       switch (type) {
@@ -99,7 +98,9 @@ export default {
       }
     },
     reset() {
-      this.model = {};
+      for (let key in this.model) {
+        this.model[key] = "";
+      }
     },
   },
 };

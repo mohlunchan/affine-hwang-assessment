@@ -3,11 +3,13 @@
     ref="form"
     :formFields="formFields"
     :rules="rules"
+    :disableForm="loading"
     @submit="handleSubmit"
   >
-    <template v-slot:submit="{ loading }">
-      <template v-if="!loading">Create Customer</template>
-      <template v-else>Submitting..</template>
+    <template #action="{ validate }">
+      <n-button :loading="loading" @click="validate">
+        Create Customer
+      </n-button>
     </template>
   </Template>
 </template>
@@ -15,16 +17,18 @@
 <script>
 import Template from "./template.vue";
 import CustomerMixin from "@/mixins/customers";
-import { useLoadingBar, useMessage } from "naive-ui";
+import { useLoadingBar, useMessage, NButton } from "naive-ui";
 import { createCustomer } from "@/api/module/customers";
 
 export default {
   mixins: [CustomerMixin],
   components: {
     Template,
+    NButton,
   },
   data() {
     return {
+      loading: false,
       loadingBar: useLoadingBar(),
       message: useMessage(),
     };
@@ -32,6 +36,7 @@ export default {
   methods: {
     async handleSubmit(formValues) {
       try {
+        this.loading = true;
         this.loadingBar.start();
         await createCustomer({ ...formValues });
         this.loadingBar.finish();
@@ -44,13 +49,9 @@ export default {
 
         //notify user which parameters are invalid
         if (errors && errors.length > 0)
-          this.message.error(
-            `Invalid value for parameter(s) : ${errors
-              .map((error) => error.param)
-              .join(",")}`
-          );
+          this.message.error(errors.map((error) => `${error.param}: ${error.msg}`)[0]);
       } finally {
-        this.$refs.form.loading = false;
+        this.loading = false;
       }
     },
   },

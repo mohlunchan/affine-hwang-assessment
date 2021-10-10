@@ -4,11 +4,20 @@
     :formFields="computedFormFields"
     :rules="rules"
     :defaultValues="defaultValues"
-    @submit="handleSubmit"
+    :disableForm="loading"
+    @submit="handleUpdate"
   >
-    <template v-slot:submit="{ loading }">
-      <template v-if="!loading">Update Customer</template>
-      <template v-else>Submitting..</template>
+    <template #action="{ validate }">
+      <template v-if="!loading">
+        <n-button style="margin-right: 8px" @click="validate"
+          >Update Customer</n-button
+        >
+        <n-button type="error" @click="handleDelete">Delete</n-button>
+      </template>
+
+      <template v-if="loading">
+        <n-button :loading="loading"></n-button>
+      </template>
     </template>
   </Template>
 </template>
@@ -16,19 +25,25 @@
 <script>
 import Template from "./template.vue";
 import CustomerMixin from "@/mixins/customers";
-import { useLoadingBar, useMessage } from "naive-ui";
-import { updateCustomer, getCustomer } from "@/api/module/customers";
+import { useLoadingBar, useMessage, NButton } from "naive-ui";
+import {
+  updateCustomer,
+  getCustomer,
+  deleteCustomer,
+} from "@/api/module/customers";
 
 export default {
   mixins: [CustomerMixin],
   components: {
     Template,
+    NButton,
   },
   data() {
     return {
       defaultValues: {},
       loadingBar: useLoadingBar(),
       message: useMessage(),
+      loading: false,
     };
   },
   computed: {
@@ -47,14 +62,36 @@ export default {
     },
   },
   methods: {
-    async handleSubmit(formValues) {
+    async handleDelete() {
+      this.handleSubmit(
+        async () => {
+          return deleteCustomer(this.$route.params.id);
+        },
+        () => {
+          this.message.success("Customer deleted");
+          this.$router.go(-1);
+        }
+      );
+    },
+    handleUpdate(formValues) {
+      this.handleSubmit(
+        () => {
+          const data = { ...formValues, uuid: this.$route.params.id };
+          delete data.email;
+          return updateCustomer(data);
+        },
+        () => {
+          this.message.success("Customer details updated");
+        }
+      );
+    },
+    async handleSubmit(fn = () => {}, successCb = () => {}) {
       try {
+        this.loading = true;
         this.loadingBar.start();
-        const data = { ...formValues, uuid: this.$route.params.id };
-        delete data.email;
-        await updateCustomer(data);
+        await fn();
+        successCb();
         this.loadingBar.finish();
-        this.message.success("Customer details updated");
       } catch (error) {
         this.loadingBar.error();
 
@@ -68,7 +105,7 @@ export default {
               .join(",")}`
           );
       } finally {
-        this.$refs.form.loading = false;
+        this.loading = false;
       }
     },
     setDefaultValues(data) {
