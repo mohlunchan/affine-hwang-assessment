@@ -1,12 +1,19 @@
 <template>
-  {{ rules }}
-  <n-form ref="form" :model="model" :rules="rules" @submit="handleSubmit">
+  <n-form
+    ref="form"
+    :model="{ ...defaultValues, ...model }"
+    :rules="rules"
+    @submit="handleSubmit"
+  >
     <template v-for="(field, index) in fields" :key="`form-field-${index}`">
       <div>
         <n-form-item :label="field.label" :path="field.name">
           <component
-            v-model="model[field.name]"
-            v-bind="field.attrs"
+            v-model:value="model[field.name]"
+            v-bind="{
+              ...field.attrs,
+              value: model[field.name] || defaultValues[field.name] || '',
+            }"
             :is="field.component"
           ></component>
         </n-form-item>
@@ -20,15 +27,11 @@
 </template>
 
 <script>
-// import { Field, Form, ErrorMessage } from "vee-validate";
 import { NForm, NInput, NFormItem, NButton } from "naive-ui";
 
 export default {
   emits: ["submit"],
   components: {
-    // Form,
-    // Field,
-    // ErrorMessage,
     NForm,
     NFormItem,
     NInput,
@@ -54,14 +57,15 @@ export default {
       },
     },
   },
+  data() {
+    return {
+      model: {},
+      loading: false,
+    };
+  },
   computed: {
-    model() {
-      return this.formFields.reduce((obj, field) => {
-        obj[field.name] = this.defaultValues[field.name] || "";
-        return obj;
-      }, {});
-    },
     fields() {
+      // dynamic fields so we can add more different field types in the future
       return this.formFields.map((field) => {
         return {
           ...field,
@@ -69,11 +73,6 @@ export default {
         };
       });
     },
-  },
-  data() {
-    return {
-      loading: false,
-    };
   },
   methods: {
     handleClick(e) {
@@ -88,13 +87,19 @@ export default {
 
       this.loading = true;
 
-      this.$emit("submit", this.model);
+      this.$emit("submit", {
+        ...this.defaultValues,
+        ...this.model,
+      });
     },
     getComponent(type) {
       switch (type) {
         default:
           return NInput;
       }
+    },
+    reset() {
+      this.model = {};
     },
   },
 };
