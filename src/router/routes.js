@@ -24,7 +24,11 @@ const routes = [
             },
         ]
     },
-    { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('@/views/error.vue') },
+    {
+        path: '/:id(4\\d{2})',
+        component: () => import('@/views/error.vue')
+    },
+    { path: '/:pathMatch(.*)*', redirect: '/404' },
 ]
 
 export default routes
