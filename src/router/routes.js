@@ -24,6 +24,7 @@ const routes = [
             },
         ]
     },
+    { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('@/views/error.vue') },
 ]
 
 export default routes
