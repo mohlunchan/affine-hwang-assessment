@@ -1,13 +1,7 @@
 <template>
   <slot name="header"></slot>
 
-  <n-form
-    ref="form"
-    :model="model"
-    :rules="rules"
-    :disabled="disableForm"
-    @submit="handleSubmit"
-  >
+  <n-form ref="form" :model="model" :rules="rules" :disabled="disableForm">
     <template v-for="(field, index) in fields" :key="`form-field-${index}`">
       <div>
         <n-form-item :label="field.label" :path="field.name">
