@@ -1,5 +1,7 @@
 <template>
-  <button @click="$router.push('/add')">Add New Customer</button>
+  <n-button @click="$router.push({ name: 'customer-create' })"
+    >Add New Customer</n-button
+  >
 
   <n-data-table
     v-model:page="page"
@@ -13,11 +15,12 @@
 
 <script>
 import { getCustomers, deleteCustomer } from "@/api/module/customers";
-import { NDataTable, useLoadingBar } from "naive-ui";
+import { NDataTable, useLoadingBar, NButton } from "naive-ui";
 
 export default {
   components: {
     NDataTable,
+    NButton,
   },
   data() {
     return {
@@ -106,22 +109,26 @@ export default {
     },
   },
   beforeRouteEnter(to, from, next) {
-    getCustomers(to.query.page || 1, 10).then((response) => {
-      next((vm) => {
-        const { total, data } = response.data;
+    getCustomers(to.query.page || 1, 10)
+      .then((response) => {
+        next((vm) => {
+          const { total, data } = response.data;
 
-        vm.totalItems = total;
-        vm.pagination.itemCount = data.length;
-        vm.pagination.pageCount = vm.pageCount;
+          vm.totalItems = total;
+          vm.pagination.itemCount = data.length;
+          vm.pagination.pageCount = vm.pageCount;
 
-        vm.items = data.map((item) => ({
-          id: item.uuid,
-          name: item.name,
-          address: item.address,
-          email: item.email,
-        }));
+          vm.items = data.map((item) => ({
+            id: item.uuid,
+            name: item.name,
+            address: item.address,
+            email: item.email,
+          }));
+        });
+      })
+      .catch(() => {
+        next();
       });
-    });
   },
   beforeUnmount() {
     this.isLoading = false;
