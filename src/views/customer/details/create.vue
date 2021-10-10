@@ -36,6 +36,7 @@ export default {
         await createCustomer({ ...formValues });
         this.loadingBar.finish();
         this.message.success("Customer created");
+        this.$refs.form.reset();
       } catch (error) {
         this.loadingBar.error();
 
