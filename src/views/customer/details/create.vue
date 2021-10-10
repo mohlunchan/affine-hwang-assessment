@@ -11,7 +11,7 @@
     </template>
 
     <template #action="{ validate }">
-      <n-button :loading="loading" @click="validate">
+      <n-button :loading="loading" :disabled="loading" @click="validate">
         Create Customer
       </n-button>
     </template>
