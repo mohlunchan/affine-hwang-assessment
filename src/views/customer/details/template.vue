@@ -1,4 +1,6 @@
 <template>
+  <slot name="header"></slot>
+
   <n-form
     ref="form"
     :model="model"
