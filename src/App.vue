@@ -1,9 +1,11 @@
 <template>
-  <n-loading-bar-provider>
-    <n-message-provider>
-      <router-view></router-view>
-    </n-message-provider>
-  </n-loading-bar-provider>
+  <div class="container">
+    <n-loading-bar-provider>
+      <n-message-provider>
+        <router-view></router-view>
+      </n-message-provider>
+    </n-loading-bar-provider>
+  </div>
 </template>
 
 <script>
@@ -17,3 +19,13 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.container {
+  max-width: 1024px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+</style>
